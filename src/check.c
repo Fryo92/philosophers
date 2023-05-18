@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils_check.c                                      :+:      :+:    :+:   */
+/*   check.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abiddane <abiddane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/03 14:40:55 by abiddane          #+#    #+#             */
-/*   Updated: 2023/03/03 15:17:06 by abiddane         ###   ########.fr       */
+/*   Updated: 2023/05/15 11:01:57 by abiddane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,17 +26,7 @@ void	check_all_eat(t_data *data)
 	pthread_mutex_unlock(&(data->check));
 }
 
-void	eat_time(t_philo *philo)
-{
-	t_data	*data;
-
-	data = philo->data;
-	pthread_mutex_lock(&(data->time));
-	philo->last_eat = ft_time();
-	pthread_mutex_unlock(&(data->time));
-}
-
-int	dead_time(t_data *data, int i)
+int	is_philo_dead(t_data *data, int i)
 {
 	pthread_mutex_lock(&(data->time));
 	if (ft_time() - data->philo[i].last_eat >= data->t_death)
@@ -48,17 +38,14 @@ int	dead_time(t_data *data, int i)
 	return (0);
 }
 
-int	check_death_eat(t_data *data)
+int	check_finish(t_data *data)
 {
-	pthread_mutex_lock(&(data->death));
 	pthread_mutex_lock(&(data->check));
 	if (data->died == 0 && (data->all_eat == -1 || data->all_eat == 0))
 	{
-		pthread_mutex_unlock(&(data->death));
 		pthread_mutex_unlock(&(data->check));
 		return (0);
 	}
 	pthread_mutex_unlock(&(data->check));
-	pthread_mutex_unlock(&(data->death));
 	return (1);
 }

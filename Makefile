@@ -3,7 +3,7 @@
 NAME	=	philo
 
 CC		=	cc
-FLAG	=	-Wall -Wextra -Werror #-fsanitize=thread
+FLAG	=	-Wall -Wextra -Werror -g
 SRC_DIR	=	src/
 OBJ_DIR =	obj/
 INCLUDE	=	./include
@@ -23,7 +23,7 @@ WHITE		= \033[0;97m
 
 # Sources
 
-FILES	=	main utils utils_eat utils_check error routine init
+FILES	=	main utils eat check error routine init
 
 SRCS	=	$(addprefix $(SRC_DIR), $(addsuffix .c, $(FILES)))
 OBJS	=	$(addprefix $(OBJ_DIR), $(addsuffix .o, $(FILES)))
@@ -43,7 +43,7 @@ $(NAME)	:	$(OBJS) $(INCLUDE)/philo.h ./Makefile
 	@echo "$(GREEN)Philo compiled!$(DEF_COLOR)"
 
 $(OBJ_DIR)%.o	:	$(SRC_DIR)%.c | $(OBJF)
-	$(CC) $(CFLAGS) -I$(INCLUDE) -c $< -o $@
+	$(CC) $(FLAG) -I$(INCLUDE) -c $< -o $@
 
 clean	:
 	@rm -rf $(OBJ_DIR)

@@ -6,7 +6,7 @@
 /*   By: abiddane <abiddane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/13 13:07:03 by abiddane          #+#    #+#             */
-/*   Updated: 2023/03/03 14:07:41 by abiddane         ###   ########.fr       */
+/*   Updated: 2023/05/15 13:38:59 by abiddane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,11 +28,11 @@ int	init_mutex(t_data *data)
 	}
 	if (pthread_mutex_init(&(data->print), NULL))
 		return (2);
-	if (pthread_mutex_init(&(data->death), NULL))
-		return (2);
 	if (pthread_mutex_init(&(data->check), NULL))
 		return (2);
 	if (pthread_mutex_init(&(data->time), NULL))
+		return (2);
+	if (pthread_mutex_init(&(data->start), NULL))
 		return (2);
 	return (0);
 }
@@ -84,5 +84,30 @@ int	init_data(t_data *data, char **av)
 	}
 	if (init_philo(data))
 		return (4);
+	return (0);
+}
+
+int	thread_init(t_data *data)
+{
+	int		i;
+	t_philo	*philo;
+
+	i = 0;
+	pthread_mutex_lock(&(data->start));
+	while (i < data->n_philo)
+	{
+		philo = &(data->philo[i]);
+		if (pthread_create(&(philo->thd), NULL, rout, philo))
+		{
+			free(data->philo);
+			free(data->fork);
+			pthread_mutex_unlock(&(data->start));
+			return (3);
+		}
+		last_eat_time(philo);
+		i++;
+	}
+	data->z_time = ft_time();
+	pthread_mutex_unlock(&(data->start));
 	return (0);
 }

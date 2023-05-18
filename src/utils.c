@@ -6,7 +6,7 @@
 /*   By: abiddane <abiddane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/13 12:22:59 by abiddane          #+#    #+#             */
-/*   Updated: 2023/03/17 11:08:34 by abiddane         ###   ########.fr       */
+/*   Updated: 2023/05/15 11:00:49 by abiddane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,9 +48,12 @@ long long	ft_time(void)
 void	print_action(t_data *data, int id, char *str)
 {
 	pthread_mutex_lock(&(data->print));
-	printf("%lld ", ft_time() - data->z_time);
-	printf("%d ", id);
-	printf("%s\n", str);
+	if (!check_finish(data))
+	{
+		printf("%lld ", ft_time() - data->z_time);
+		printf("%d ", id);
+		printf("%s\n", str);
+	}
 	pthread_mutex_unlock(&(data->print));
 }
 
@@ -59,10 +62,10 @@ void	ft_usleep(int time, t_data *data)
 	long long	present;
 
 	present = ft_time();
-	while (!check_death_eat(data))
+	while (!check_finish(data))
 	{
-		if (ft_time() - present >= time)
+		if ((ft_time() - present) >= time)
 			break ;
-		usleep(time);
+		usleep(700);
 	}
 }

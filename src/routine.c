@@ -6,31 +6,11 @@
 /*   By: abiddane <abiddane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/13 13:05:11 by abiddane          #+#    #+#             */
-/*   Updated: 2023/03/17 11:19:44 by abiddane         ###   ########.fr       */
+/*   Updated: 2023/05/15 11:02:02 by abiddane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-
-int	philo_eating(t_philo *philo)
-{
-	t_data	*data;
-
-	data = philo->data;
-	if (check_death_eat(data))
-		return (1);
-	if (eat_util(philo))
-		return (1);
-	eat_time(philo);
-	print_action(data, philo->num, "is eating");
-	ft_usleep(data->t_eat, data);
-	pthread_mutex_lock(&(data->check));
-	philo->eat += 1;
-	pthread_mutex_unlock(&(data->check));
-	pthread_mutex_unlock(&(data->fork[philo->fork_l]));
-	pthread_mutex_unlock(&(data->fork[philo->fork_r]));
-	return (0);
-}
 
 void	kill_clean(t_data *data)
 {
@@ -50,8 +30,8 @@ void	kill_clean(t_data *data)
 	}
 	pthread_mutex_destroy(&data->time);
 	pthread_mutex_destroy(&data->check);
-	pthread_mutex_destroy(&data->death);
 	pthread_mutex_destroy(&data->print);
+	pthread_mutex_destroy(&data->start);
 	free(data->philo);
 	free(data->fork);
 }
@@ -60,24 +40,21 @@ void	philo_death(t_data *data)
 {
 	int		i;
 
-	while (!check_death_eat(data))
+	while (!check_finish(data))
 	{
 		i = 0;
 		while (i < data->n_philo)
 		{
-			pthread_mutex_lock(&(data->death));
-			if (dead_time(data, i))
+			if (is_philo_dead(data, i))
 			{
 				print_action(data, data->philo[i].num, "died");
+				pthread_mutex_lock(&(data->check));
 				data->died = 1;
-				pthread_mutex_unlock(&(data->death));
+				pthread_mutex_unlock(&(data->check));
 				break ;
 			}
-			pthread_mutex_unlock(&(data->death));
 			i++;
 		}
-		if (check_death_eat(data))
-			break ;
 		check_all_eat(data);
 	}
 	return ;
@@ -90,21 +67,19 @@ void	*rout(void *philoche)
 
 	philo = (t_philo *)philoche;
 	data = philo->data;
+	pthread_mutex_lock(&(data->start));
+	pthread_mutex_unlock(&(data->start));
 	if (!(philo->num % 2) && data->n_philo > 1)
-		usleep(data->t_eat * 1000);
-	while (!check_death_eat(data))
+		ft_usleep(data->t_eat, data);
+	while (!check_finish(data))
 	{
-		if (check_death_eat(data))
-			break ;
-		if (philo_eating(philo))
-			break ;
-		if (check_death_eat(data))
-			break ;
+		take_fork(philo);
 		print_action(data, philo->num, "is sleeping");
 		ft_usleep(data->t_sleep, data);
-		if (check_death_eat(data))
-			break ;
 		print_action(data, philo->num, "is thinking");
+		if (data->n_philo % 2 != 0)
+			ft_usleep(((data->t_death - (data->t_eat \
+				+ data->t_sleep)) / 2), data);
 	}
 	return (NULL);
 }
@@ -112,27 +87,23 @@ void	*rout(void *philoche)
 int	launch(t_data *data)
 {
 	int		i;
-	t_philo	*philo;
+	int		ret;
 
 	i = 0;
-	while (i < data->n_philo)
+	if (data->n_philo == 1)
 	{
-		philo = &(data->philo[i]);
-		if (pthread_create(&(philo->thd), NULL, rout, philo))
-		{
-			i--;
-			while (i-- >= 0)
-			{
-				pthread_join(philo->thd, NULL);
-			}
-			free(data->philo);
-			free(data->fork);
-			return (3);
-		}
-		eat_time(philo);
-		i++;
+		print_action(data, 1, "has taken a fork");
+		ft_usleep(data->t_death, data);
+		print_action(data, 1, "died");
+		free(data->philo);
+		free(data->fork);
+		return (0);
 	}
-	philo_death(data);
-	kill_clean(data);
-	return (0);
+	else
+	{
+		ret = thread_init(data);
+		philo_death(data);
+		kill_clean(data);
+	}
+	return (ret);
 }

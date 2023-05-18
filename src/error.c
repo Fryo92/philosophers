@@ -6,7 +6,7 @@
 /*   By: abiddane <abiddane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/13 12:18:14 by abiddane          #+#    #+#             */
-/*   Updated: 2023/03/03 13:17:16 by abiddane         ###   ########.fr       */
+/*   Updated: 2023/05/05 14:38:23 by abiddane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int	ft_strlen(char *str)
 	return (i);
 }
 
-int	check_arg(int ac, char **av)
+int	check_arg(char **av)
 {
 	int		i;
 	int		j;
